@@ -1,0 +1,63 @@
+- hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
+
+  roles:
+    - vpn
+
+  tasks:
+    - name: echo
+      shell: hostname
+      register: hello
+  
+# debug example
+    - debug: msg='host is = "{{ hello.stdout }}"'
+
+    - name: java
+      yum: name=java-1.8.0-openjdk-devel.x86_64
+
+    - name: keys exist
+      shell: test -f /tmp/ssh.tar.gz && echo "yes" || echo "no"
+      register: keys_exist
+
+    - name: keys extracted
+      shell: test -d /home/rmchale/.ssh && echo "yes" || echo "no"
+      register: keys_extracted
+
+    - name: install keys
+      copy: src=~/Dropbox/Documents/Keys/ssh.tar.gz dest=/tmp
+      when: 
+        - keys_extracted.stdout == "no"
+        - keys_exist.stdout == "no"
+
+    - name: extract keys
+      unarchive: copy=no  src=/tmp/ssh.tar.gz dest=/home/rmchale
+      when: keys_extracted.stdout == "no"
+
+    - name: delete keys.tar.gz
+      file: state=absent path=/tmp/ssh.tar.gz
+
+    - name: test apache repo
+      shell: test -f /etc/yum.repos.d/epel-apache-maven.repo && echo "yes" || echo "no"
+      register: repo_exists
+
+    - name: wget
+      yum: name=wget
+
+    - name: get repo
+      shell: wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+      when: repo_exists.stdout == "no"
+
+    - name: maven
+      yum: name=apache-maven
+
+    - name: m2
+      shell: test -f /home/rmchale/.m2/settings.xml && echo "yes" || echo "no"
+      register: m2_exists
+
+    - name: install m2
+      copy: src=~/.m2/settings.xml dest=/home/rmchale/.m2/settings.xml
+      when: m2_exists.stdout == "no"  
+
+
