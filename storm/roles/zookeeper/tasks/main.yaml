@@ -1,0 +1,25 @@
+---
+- name: check for cdh repo
+  shell: test -f  /etc/yum.repos.d/cloudera-cdh5.repo.repo && echo "yes" || echo "no"
+  register: repo_installed
+
+- name: install cdh repo
+  get_url:
+    url: https://archive.cloudera.com/cdh5/redhat/7/x86_64/cdh/cloudera-cdh5.repo?_ga=2.225948121.2134612694.1498141799-1836160524.1498141799
+    dest: /etc/yum.repos.d/cloudera-cdh5.repo
+  when: repo_installed.stdout == "no"
+
+- name: java
+  yum: name=java-1.8.0-openjdk.x86_64 state=present
+
+- name: zookeeper-server
+  yum: name=zookeeper-server state=present
+
+
+- name: check zookeeper-server started
+  shell: test pgrep -f zookeeper && echo "yes" || echo "no"
+  register: zookeeper_started
+
+- name: start zookeeper
+  shell: service zookeeper-server start
+  when: zookeeper_started.stdout == "no"
