@@ -1,0 +1,16 @@
+---
+- name: check nimbus started
+  shell: pgrep -f "[n]imbus" && echo "yes" || echo "no"
+  register: nimbus_started
+
+- name: start storm
+  shell: nohup /opt/ni/storm/apache-storm-1.1.0/bin/storm nimbus &
+  when: nimbus_started.stdout == "no" 
+
+- name: check ui started
+  shell: pgrep -f "[s]torm.ui.core" && echo "yes" || echo "no"
+  register: ui_started
+
+- name: start ui
+  shell: nohup /opt/ni/storm/apache-storm-1.1.0/bin/storm ui &
+  when: ui_started.stdout == "no" 

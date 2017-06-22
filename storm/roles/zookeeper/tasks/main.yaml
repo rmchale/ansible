@@ -15,10 +15,25 @@
 - name: zookeeper-server
   yum: name=zookeeper-server state=present
 
+- name: zookeeper init check
+  shell: test -f /etc/zookeeper/conf/zoo.cfg && echo "yes" || echo "no"
+  register: zookeeper_initialized
+
+- name: init zookeeper
+  shell: service zookeeper-server init
+  when: zookeeper_initialized.stdout == "no"
 
 - name: check zookeeper-server started
-  shell: test pgrep -f zookeeper && echo "yes" || echo "no"
+  shell: pgrep -f [z]ookeeper && echo "yes" || echo "no"
   register: zookeeper_started
+
+- name: check initLimit
+  shell: grep "initLimit=15" /etc/zookeeper/conf/zoo.cfg && echo "yes" || echo "no"
+  register: sync_limit
+
+- name: install sync sync_limit
+  shell: sed -i s/initLimit=10/initLimit=15/g /etc/zookeeper/conf/zoo.cfg
+  when: sync_limit.stdout == "no"
 
 - name: start zookeeper
   shell: service zookeeper-server start

@@ -1,0 +1,44 @@
+---
+- name: java
+  yum: name=java-1.8.0-openjdk.x86_64 state=present
+
+- name: check storm
+  shell: test -d /opt/ni/storm && echo "yes" || echo "no"
+  register: storm_directory
+
+- name: create storm directory
+  shell: mkdir -p /opt/ni/storm
+  when: storm_directory.stdout == "no" 
+
+- name: check storm installed 
+  shell: test -d /opt/ni/storm/apache-storm-1.1.0 && echo "yes" || echo "no"
+  register: storm_installed
+
+- name: check storm download
+  shell: test -f /tmp/apache-storm-1.1.0.tar.gz && echo "yes" || echo "no"
+  register: storm_downloaded
+
+- name: download storm
+  get_url:
+    url: http://apache.claz.org/storm/apache-storm-1.1.0/apache-storm-1.1.0.tar.gz
+    dest: /tmp/apache-storm-1.1.0.tar.gz
+  when: storm_installed.stdout == "no" and storm_downloaded.stdout == "no"
+
+- name: install storm
+  shell: tar -xzf /tmp/apache-storm-1.1.0.tar.gz -C /opt/ni/storm
+  when: storm_installed.stdout == "no"
+ 
+- copy:
+    src: conf/storm.conf
+    dest:  /opt/ni/storm/apache-storm-1.1.0/conf/storm.yaml
+
+- name: check storm started
+  shell: pgrep -f "[o]rg.apache.storm.daemon.supervisor.Supervisor" && echo "yes" || echo "no"
+  register: storm_started
+
+- debug:
+    msg: "storm_started {{ storm_started }}"
+
+- name: start storm
+  shell: nohup /opt/ni/storm/apache-storm-1.1.0/bin/storm supervisor &
+  when: storm_started.stdout == "no" 
