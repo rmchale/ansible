@@ -1,0 +1,19 @@
+- hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
+
+  roles:
+    - vpn
+    - ssh
+    - java
+
+  tasks:
+    - name: echo
+      shell: hostname
+      register: hello
+  
+# debug example
+    - debug: msg='host is = "{{ hello.stdout }}"'
+
+

@@ -1,0 +1,32 @@
+---
+- name: java
+  yum: name=java-1.8.0-openjdk-devel.x86_64
+
+- name: test apache repo
+  shell: test -f /etc/yum.repos.d/epel-apache-maven.repo && echo "yes" || echo "no"
+  register: repo_exists
+
+- name: wget
+  yum: name=wget
+
+- name: get repo
+  shell: wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+  when: repo_exists.stdout == "no"
+
+- name: maven
+  yum: name=apache-maven
+
+- name: m2
+  shell: test -f /home/rmchale/.m2/settings.xml && echo "yes" || echo "no"
+  register: m2_exists
+
+- name: create  m2
+  file: path=/home/rmchale/.m2 state=directory
+
+- name: install m2
+  copy: src=~/.m2/settings.xml dest=/home/rmchale/.m2/settings.xml
+  when: m2_exists.stdout == "no"
+
+- name: chown m2
+  file: dest=/home/rmchale/.m2 owner=rmchale group=rmchale recurse=yes
+  when: m2_exists.stdout == "no"
