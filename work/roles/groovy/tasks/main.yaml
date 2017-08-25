@@ -1,0 +1,16 @@
+---
+- name: check_sdkman
+  shell: test -d /Users/rmchale/.sdkman && echo "yes" || echo "no"
+  register: sdkman_exists
+
+- name: install sdkman
+  shell: curl -s "https://get.sdkman.io" | bash
+  when: sdkman_exists.stdout == "no"
+
+- name: install sdkman in bash_profile
+  shell: echo '[[ -s "/home/rmchale/.sdkman/bin/sdkman-init.sh" ]] && source "/home/rmchale/.sdkman/bin/sdkman-init.sh"' >> /home/rmchale/.bash_profile
+  when: sdkman_exists.stdout == "no"
+
+- name: install groovy
+  shell: source /home/rmchale/.bash_profile && sdkman install groovy
+  when: sdkman_exists.stdout == "no"
