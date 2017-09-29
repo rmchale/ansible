@@ -1,0 +1,10 @@
+#! /bin/sh
+
+if [ -z "$1" ]; then
+	echo "Syntax: agost <name of yaml file>"
+	exit 1
+fi
+
+gcloud compute --project "pioneering-tome-782" instances create "mchale-python" --zone "us-central1-f"  --machine-type "n1-highmem-32" --service-account "283993631828-compute@developer.gserviceaccount.com" --image "debian-9-stretch-v20170829" --image-project "debian-cloud" --boot-disk-size "2000" --boot-disk-type "pd-ssd" --boot-disk-device-name "mchale-python"
+sleep 10
+ansible-playbook -i `gcloud compute instances list --project=pioneering-tome-782 |grep mchale-python |awk '{ print $5 }'`, $1

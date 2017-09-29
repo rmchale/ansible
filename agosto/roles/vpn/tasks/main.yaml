@@ -1,0 +1,16 @@
+---
+- name: dns check
+  shell: test "$(grep -c 192.168.200.75 /etc/resolv.conf)" -eq 0 && echo "yes" || echo "no"
+  register: install_dns
+
+- name: ni dns
+# shell: echo "nameserver 192.168.200.75" >> /etc/resolv.conf
+  lineinfile: dest=/etc/resolv.conf
+               insertbefore='^nameserver'
+               line='nameserver 192.168.200.75'
+               state=present
+  when: install_dns.stdout == "yes"
+
+- name: append ni suffix
+  shell: sed -i '/google.internal/s/$/ colo.networkedinsights.com networkedinsights.com/' /etc/resolv.conf
+  when: install_dns.stdout == "yes"

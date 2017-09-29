@@ -1,0 +1,3 @@
+---
+- name: java
+  apt: name=default-jre

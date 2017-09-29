@@ -1,0 +1,10 @@
+#! /bin/sh
+
+if [ -z "$1" ]; then
+	echo "Syntax: workup <name of yaml file>"
+	exit 1
+fi
+
+gcloud compute --project "cloud9-dev" instances create "mchale-work" --zone "us-central1-f"  --machine-type "n1-highcpu-8" --subnet "cloud9-dev-subnet-a" --service-account "857626518705-compute@developer.gserviceaccount.com" --image "centos-7-v20170523" --image-project "centos-cloud" --boot-disk-size "1000" --boot-disk-type "pd-ssd" --boot-disk-device-name "mchale-work"
+sleep 10
+ansible-playbook -i `gcloud compute instances list --project=cloud9-dev |grep mchale-work |awk '{ print $5 }'`, $1

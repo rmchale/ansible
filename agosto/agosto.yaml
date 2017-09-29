@@ -1,0 +1,34 @@
+- hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
+
+  vars_files:
+    - vars/main.yaml
+
+  roles:
+    - ssh
+    - agosto
+    - java
+
+  tasks:
+    - name: echo
+      shell: hostname
+      register: hello
+  
+# debug example
+    - debug: msg='host is = "{{ hello.stdout }}"'
+
+
+    - name: check for downloads
+      shell: test -e /home/rmchale/setup.sh && echo "yes" || echo "no"
+      register: setup_exists
+      become: yes
+      become_user: rmchale
+
+    - name: copy setup
+      copy: src=~/src/ansible/agosto/setup.sh mode=0755 dest=/home/rmchale/setup.sh
+      become: yes
+      become_user: rmchale
+      when: 
+        - setup_exists.stdout == "no"

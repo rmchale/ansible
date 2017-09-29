@@ -1,0 +1,72 @@
+---
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+
+- name: Install packages
+  apt: name={{ item }} state=installed
+  with_items:
+  - "{{ apt_get_packages }}"
+
+- name: check miniconda
+  shell: test -d /opt/miniconda && echo "yes" || echo "no"
+  register: miniconda_exists
+
+- name: install miniconda
+  shell: wget -q https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && bash /tmp/miniconda.sh -b -p /opt/miniconda && rm /tmp/miniconda.sh
+  when: miniconda_exists.stdout == "no"
+
+- name: check for pip
+  shell: test -e /usr/local/bin/pip && echo "yes" || echo "no"
+  register: pip_exists
+
+- name: install pip
+  shell: easy_install pip
+  when: pip_exists.stdout == "no"
+
+- name: check conda packages
+  shell: test -d /opt/miniconda/pkgs/numpy-1.13.1-py27_0 && echo "yes" || echo "no"
+  register: conda_packages_exist
+
+- name: install conda packages
+  shell: conda install -y -q numpy scipy scikit-learn click pandas jupyter ipython  && pip install --no-cache-dir --upgrade --ignore-installed setuptools logbook apache-beam[gcp] google-cloud-bigquery contexttimer && TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.2.1-cp27-none-linux_x86_64.whl && pip install --no-cache-dir --upgrade $TF_BINARY_URL && conda clean --all
+  environment:
+    PATH: $PATH:/opt/miniconda/bin
+  when: conda_packages_exist.stdout == "no"
+
+- name: check conda PATH
+  shell: grep -i miniconda /etc/bash.bashrc && echo "yes" || echo "no"
+  register: conda_path_exists
+
+- name: setup conda PATH
+  lineinfile: dest=/etc/bash.bashrc line='export PATH=/opt/miniconda/bin:$PATH'
+  when: conda_path_exists.stdout == "no"
+
+- name: check for fasttext
+  shell: test -e /usr/bin/fasttext && echo "yes" || echo "no"
+  register: fasttext_exists
+
+- name: install fasttext
+  shell: cd /tmp && git clone https://github.com/facebookresearch/fastText.git && cd fastText && git checkout dbd85380c201a42857229a26ab4322a5045651e5 && make && cp fasttext /usr/bin && cd /tmp && rm -rf fastText
+  when: fasttext_exists.stdout == "no"
+
+- name: check for vw
+  shell: test -e /usr/local/bin/vw && echo "yes" || echo "no"
+  register: vw_exists
+
+- name: install vw
+  shell: cd /tmp && git clone git://github.com/JohnLangford/vowpal_wabbit.git && cd vowpal_wabbit && git checkout tags/8.1.1 && ./autogen.sh && make && make install  && cd /tmp && rm -rf vowpal_wabbit
+  when: vw_exists.stdout == "no"
+
+- name: check vw profile exists
+  shell: grep -i LD_LIBRARY_PATH /etc/bash.bashrc && echo "yes" || echo "no"
+  register: vw_profile_exists
+
+- name: setup vw profile
+  lineinfile: dest=/etc/bash.bashrc line='export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}'
+  when: vw_profile_exists.stdout == "no"
+
+- name: gsutil boto hack
+  file:
+    path: /etc/boto.cfg
+    state: absent

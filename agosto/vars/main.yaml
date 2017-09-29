@@ -1,0 +1,15 @@
+apt_get_packages:
+  - bzip2
+  - wget
+  - ca-certificates
+  - git
+  - build-essential
+  - zlib1g-dev
+  - libboost-program-options-dev
+  - parallel
+  - libtool
+  - m4
+  - automake
+  - python-setuptools 
+  - python-dev
+  - jq
