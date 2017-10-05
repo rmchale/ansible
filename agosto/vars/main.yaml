@@ -9,6 +9,7 @@ apt_get_packages:
   - parallel
   - libtool
   - m4
+  - nginx
   - automake
   - python-setuptools 
   - python-dev
