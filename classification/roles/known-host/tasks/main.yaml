@@ -1,0 +1,12 @@
+---
+- name: check for known-host
+  hosts: 127.0.0.1
+  connection: local
+  shell: gcloud compute instances list --project=pioneering-tome-782 |grep -i known-host |awk  '{ print $1 }' |head -1
+  register: known_host_running
+
+- name: create known-host
+  hosts: 127.0.0.1
+  connection: local
+  shell: gcloud beta compute --project "pioneering-tome-782" instances create "known-host" --zone "us-central1-f" --machine-type "n1-standard-1" --network "default" --maintenance-policy "MIGRATE" --service-account "283993631828-compute@developer.gserviceaccount.com" --scopes "https://www.googleapis.com/auth/cloud-platform" --min-cpu-platform "Automatic" --image "cos-stable-64-10176-62-0" --image-project "cos-cloud" --boot-disk-size "10" --boot-disk-type "pd-standard" --boot-disk-device-name "known-host"
+  when: known_host_running.stdout != "known-host" 
