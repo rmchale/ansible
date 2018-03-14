@@ -1,0 +1,103 @@
+---
+- name: install bzip2
+  apt:
+    name: bzip2
+    state: present
+
+- name: install git
+  apt:
+    name: git
+    state: present
+
+- name: anaconda_exists
+  shell: test -f "$(which conda)" && echo "yes" || echo "no"
+  register: conda_exists
+
+- name: anaconda_downloaded
+  shell: test -f Anaconda3-5.1.0-Linux-x86_64.sh && echo "yes" || echo "no"
+  register: conda_downloaded
+  when: conda_exists.stdout == "no"
+
+
+- name: download conda
+  shell: wget https://repo.continuum.io/archive/Anaconda3-5.1.0-Linux-x86_64.sh
+  when: conda_downloaded.stdout == "no"
+
+- name: check conda install
+  shell: test -d $HOME/anaconda && echo "yes" || echo "no"
+  become_user: rmchale
+  register: conda_installed  
+
+- name: install conda
+  shell: bash Anaconda3-5.1.0-Linux-x86_64.sh -b -p $HOME/anaconda
+  become_user: rmchale
+  when: conda_installed.stdout == "no"
+
+- name: conda bashrc check
+  shell:  grep -q "anaconda" .bashrc && echo "yes" || echo "no"
+  register: conda_bash_exists
+
+
+- name: conda bashrc install
+# shell: echo "nameserver 192.168.200.75" >> /etc/resolv.conf
+  lineinfile: dest=$HOME/.bashrc
+               line='export PATH="$HOME/anaconda/bin:$PATH"'
+               state=present
+  when: conda_bash_exists.stdout == "no"
+  become_user: rmchale
+
+- name: conda env labx check
+  shell:  test -d $HOME/anaconda/envs/labx && echo "yes" || echo "no"
+  register: labx_env_exists
+  become_user: rmchale
+
+- name: install exists
+  shell: test -f install.sh && echo "yes" || echo "no"
+  register: install_exists
+  become_user: rmchale
+
+
+- name: install 
+  become_user: rmchale
+  shell: |
+    export PATH="$HOME/anaconda/bin:$PATH"
+    conda create -y -n labx 'python>=3'
+    source activate labx
+    conda config --env --add pinned_packages 'openjdk>8.0.121'
+    conda install -y -c conda-forge jupyterlab beakerx
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+    jupyter labextension install beakerx-jupyterlab
+
+    exit 0;
+  when: labx_env_exists.stdout == "no"
+
+
+- name: jupyter running
+  shell:  ps cax |grep -q jupyter && echo "yes" || echo "no"
+  register: jupyter_running
+
+- name: run jupyter
+  shell: screen -dmS jupyter jupyter-lab
+  become_user: rmchale
+  when: jupyter_running.stdout == "no"
+
+- name: check for vim
+  shell: grep -q vim $HOME/.bashrc && echo "yes" || echo "no"
+  become_user: rmchale
+  register: vim_setup
+
+- lineinfile:
+    path: $HOME/.bashrc
+    line: 'export EDITOR=vim'
+  when: vim_setup.stdout == "no"
+  become_user: rmchale
+
+- name: beakerx samples
+  shell: |
+    git clone --depth 1 https://github.com/twosigma/beakerx 
+    cd beakerx
+    git filter-branch --prune-empty --subdirectory-filter doc HEAD
+    mv beakerx/doc
+    samples
+    rm -rf beakerx
+
