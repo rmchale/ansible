@@ -4,7 +4,7 @@ gcloud config set account ryan.mchale@gmail.com
 machine=$(gcloud compute instances list --project=rmchale-1093 |grep mchale-beakerx |awk '{ print $5 }')
 if [ -z "$machine" ]; then 
 	gcloud beta compute --project "rmchale-1093" instances create "mchale-beakerx" --zone "us-central1-f" --machine-type "n1-standard-4"  --maintenance-policy "MIGRATE"  --scopes "https://www.googleapis.com/auth/cloud-platform" --min-cpu-platform "Automatic" --image "debian-9-stretch-v20180307" --image-project "debian-cloud" --boot-disk-size "200" --boot-disk-type "pd-ssd" --boot-disk-device-name "mchale-dev2"
-	sleep 10
+	sleep 30
 fi
 ansible-playbook -v -i `gcloud compute instances list --project=rmchale-1093 |grep mchale-beakerx |awk '{ print $5 }'`, beakerx-personal.yaml
 

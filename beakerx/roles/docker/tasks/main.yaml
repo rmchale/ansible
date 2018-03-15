@@ -13,7 +13,9 @@
   register: repo_key_exists
 
 - name: install repo key
-  shell: curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
   when: repo_key_exists.stdout == "no"
 
 - name: add repo

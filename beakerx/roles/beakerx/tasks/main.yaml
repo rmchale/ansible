@@ -56,28 +56,76 @@
   register: install_exists
   become_user: rmchale
 
+- name: create install
+  copy: 
+    dest: $HOME/install.sh
+    mode: 0755
+    content: |
+      #! /bin/bash
+      export PATH="$HOME/anaconda/bin:$PATH"
+      conda create -y -n labx 'python>=3'
+      source activate labx
+      source activate lab && conda config --env --add pinned_packages 'openjdk>8.0.121'
+      source activate lab && conda install -y nodejs
+      source activate lab && conda install -n labx -y -c conda-forge jupyterlab beakerx
+      source activate lab && jupyter labextension install @jupyter-widgets/jupyterlab-manager
+      source activate lab && jupyter labextension install beakerx-jupyterlab
+      exit 0  
+  when: install_exists.stdout == "no"
+  become_user: rmchale 
 
-- name: install 
+- name: create env
+  shell: export PATH="$HOME/anaconda/bin:$PATH" && conda create -y -n labx 'python>=3'
+  args:
+    executable: /bin/bash
   become_user: rmchale
-  shell: |
-    export PATH="$HOME/anaconda/bin:$PATH"
-    conda create -y -n labx 'python>=3'
-    source activate labx
-    conda config --env --add pinned_packages 'openjdk>8.0.121'
-    conda install -y -c conda-forge jupyterlab beakerx
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager
-    jupyter labextension install beakerx-jupyterlab
-
-    exit 0;
   when: labx_env_exists.stdout == "no"
 
+- name: conda pinned_packages
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && conda config --env --add pinned_packages 'openjdk>8.0.121'
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
+
+- name: conda install nodejs
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && conda install -y nodejs
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
+
+- name: jupyter beakerx
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && conda install -y -c conda-forge jupyterlab beakerx
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
+
+- name: jupyter extension 1
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && jupyter labextension install @jupyter-widgets/jupyterlab-manager
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
+
+- name: jupyter extension 2
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && jupyter labextension install beakerx-jupyterlab
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
 
 - name: jupyter running
   shell:  ps cax |grep -q jupyter && echo "yes" || echo "no"
   register: jupyter_running
 
 - name: run jupyter
-  shell: screen -dmS jupyter jupyter-lab
+  shell: |
+    PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && screen -dmS test 'jupyter-lab'
+    sleep 1
+  args:
+    executable: /bin/bash
   become_user: rmchale
   when: jupyter_running.stdout == "no"
 
@@ -92,12 +140,17 @@
   when: vim_setup.stdout == "no"
   become_user: rmchale
 
+- name: check for samples
+  shell: test -d samples && echo "yes" || echo "no"
+  register: samples_exist
+  become_user: rmchale
+
 - name: beakerx samples
   shell: |
     git clone --depth 1 https://github.com/twosigma/beakerx 
     cd beakerx
     git filter-branch --prune-empty --subdirectory-filter doc HEAD
-    mv beakerx/doc
-    samples
-    rm -rf beakerx
-
+    cd ..
+    mv beakerx samples
+  when: samples_exist.stdout == "no"
+  become: rmchale

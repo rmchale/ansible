@@ -47,9 +47,15 @@
       when: ssh_config_exists.stdout == "no"
       become_user: rmchale
 
+    - name: check notebooks
+      shell: test -d notebooks && echo "yes" || echo "no"
+      register: notebooks_exists
+      become_user: rmchale
+
     - name: install notebooks
       shell: git clone git@gitlab.colo.networkedinsights.com:rmchale/notebooks.git 
       become_user: rmchale
+      when: notebooks_exists.stdout == "no"
  
     - name: hello
       shell: hostname
