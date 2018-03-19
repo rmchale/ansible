@@ -1,0 +1,12 @@
+---
+- name: chrome-remote-desktop check
+  shell: test -f /opt/google/chrome-remote-desktop/chrome-remote-desktop && echo "yes" || echo "no"
+  register: crd_exists
+
+- name: get crd_exists
+  shell: wget "https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb"
+  when: crd_exists.stdout == "no"
+
+- name: install chrome-remote-desktop_current_amd64
+  shell: dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get -f install -y
+  when: crd_exists.stdout == "no"

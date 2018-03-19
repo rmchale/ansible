@@ -1,0 +1,23 @@
+---
+- name: apt-get update
+  apt:
+    update_cache: yes
+
+- name: lxde
+  apt: name={{item}} state=installed
+  with_items:
+       - lxde-core
+
+- name: xsession check
+  shell: test -f $HOME/.xsession && echo "yes" || echo "no" 
+  register: xsession_exists
+  become_user: rmchale
+
+- name: polkit install
+  copy: 
+    dest: $HOME/.xsession
+    mode: 0755
+    content: |
+      exec startlxde  
+  when: xsession_exists.stdout == "no"
+  become_user: rmchale

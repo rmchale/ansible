@@ -1,0 +1,41 @@
+---
+- name: apt-get update
+  apt:
+    update_cache: yes
+
+- name: dist upgrade
+  apt:
+    upgrade: dist
+
+- name: gnome
+  apt: name={{item}} state=installed
+  with_items:
+       - ubuntu-desktop 
+       - python-software-properties 
+       - autocutsel 
+       - gnome-shell 
+       - gnome-core 
+       - gnome-panel 
+       - gnome-themes-standard
+
+- name: polkit check
+  shell: test -f /etc/polkit-1/localauthority.conf.d/02-allow-colord.conf && echo "yes" || echo "no" 
+  register: polkit_exists
+
+- name: polkit install
+  copy: 
+    dest: /etc/polkit-1/localauthority.conf.d/02-allow-colord.conf
+    mode: 0755
+    content: |
+      polkit.addRule(function(action, subject) {
+      if ((action.id == "org.freedesktop.color-manager.create-device" ||
+        action.id == "org.freedesktop.color-manager.create-profile" ||
+        action.id == "org.freedesktop.color-manager.delete-device" ||
+        action.id == "org.freedesktop.color-manager.delete-profile" ||
+        action.id == "org.freedesktop.color-manager.modify-device" ||
+        action.id == "org.freedesktop.color-manager.modify-profile") &&
+        subject.isInGroup("chrome-remote-desktop")) {
+          return polkit.Result.YES;
+        }
+      });  
+  when: polkit_exists.stdout == "no"

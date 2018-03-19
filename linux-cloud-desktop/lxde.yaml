@@ -5,7 +5,8 @@
 
   roles:
     - ssh
-    - xfce
+    - lxde
+    - crd
 
   tasks:
     
