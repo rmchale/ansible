@@ -5,14 +5,14 @@
 
   roles:
     - ssh
-    - java
-    - groovy
+    - xfce
 
   tasks:
-    - name: echo
+    
+    - name: hello
       shell: hostname
       register: hello
-  
+
 # debug example
     - debug: msg='host is = "{{ hello.stdout }}"'
 

@@ -1,0 +1,67 @@
+#! /bin/bash
+
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_help() {
+	printf 'welcome\n'
+}
+
+# Initialize all the option variables.
+ # This ensures we are not contaminated by variables from the environment.
+machine=mchale-dev
+project=cloud9-dev
+ 
+ while :; do
+     case $1 in
+         -m|--machine)       # Takes an option argument; ensure it has been specified.
+             if [ "$2" ]; then
+                 machine=$2
+                 shift
+             else
+                 die 'ERROR: "--machine" requires a non-empty option argument.'
+             fi
+             ;;
+         --machine=?*)
+             machine=${1#*=} # Delete everything up to "=" and assign the remainder.
+             ;;
+         --machine=)         # Handle the case of an empty --file=
+             die 'ERROR: "--machine" requires a non-empty option argument.'
+             ;;
+         -p|--project)       # Takes an option argument; ensure it has been specified.
+             if [ "$2" ]; then
+                 project=$2
+                 shift
+             else
+                 die 'ERROR: "--project" requires a non-empty option argument.'
+             fi
+             ;;
+         --project=?*)
+             project=${1#*=} # Delete everything up to "=" and assign the remainder.
+             ;;
+         --project=)         # Handle the case of an empty --file=
+             die 'ERROR: "--project" requires a non-empty option argument.'
+             ;;
+         -v|--verbose)
+             verbose=$((verbose + 1))  # Each -v adds 1 to verbosity.
+             ;;
+         --)              # End of all options.
+             shift
+             break
+             ;;
+         -?*)
+             printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+             ;;
+         *)               # Default case: No more options, so break out of the loop.
+             break
+     esac
+ 
+     shift
+ done
+ 
+ # if --file was provided, open it for writing, else duplicate stdout
+echo "machine: $machine"
+echo "project: $project"
