@@ -65,11 +65,11 @@
       export PATH="$HOME/anaconda/bin:$PATH"
       conda create -y -n labx 'python>=3'
       source activate labx
-      source activate lab && conda config --env --add pinned_packages 'openjdk>8.0.121'
-      source activate lab && conda install -y nodejs
-      source activate lab && conda install -n labx -y -c conda-forge jupyterlab beakerx
-      source activate lab && jupyter labextension install @jupyter-widgets/jupyterlab-manager
-      source activate lab && jupyter labextension install beakerx-jupyterlab
+      source activate labx && conda config --env --add pinned_packages 'openjdk>8.0.121'
+      source activate labx && conda install -y nodejs
+      source activate labx && conda install -n labx -y -c conda-forge jupyterlab beakerx
+      source activate labx && jupyter labextension install @jupyter-widgets/jupyterlab-manager
+      source activate labx && jupyter labextension install beakerx-jupyterlab
       exit 0  
   when: install_exists.stdout == "no"
   become_user: rmchale 
@@ -83,6 +83,13 @@
 
 - name: conda pinned_packages
   shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && conda config --env --add pinned_packages 'openjdk>8.0.121'
+  args:
+    executable: /bin/bash
+  become_user: rmchale
+  when: labx_env_exists.stdout == "no"
+
+- name: conda install pandas
+  shell: export PATH="$HOME/anaconda/bin:$PATH" &&  source $HOME/anaconda/bin/activate labx && conda install -y pandas
   args:
     executable: /bin/bash
   become_user: rmchale

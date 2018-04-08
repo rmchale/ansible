@@ -30,11 +30,6 @@
       become_user: rmchale
       when: git_config_exists.stdout == "no"
 
-    - name: ssh config check
-      shell: test -f $HOME/.ssh/config && echo "yes" || echo "no" 
-      become_user: rmchale
-      register: ssh_config_exists
-
     - name: ssh config install
       blockinfile: 
         marker: ""
@@ -43,8 +38,17 @@
         block: |
           Host *
             StrictHostKeyChecking no
-      when: ssh_config_exists.stdout == "no"
       become_user: rmchale
+
+    - name: check notebooks
+      shell: test -d beakerx-labs-notebooks && echo "yes" || echo "no"
+      register: notebooks_exists
+      become_user: rmchale
+
+    - name: install notebooks
+      shell: git clone git@gitlab.com:ryan-mchale/beakerx-labs-notebooks.git 
+      become_user: rmchale
+      when: notebooks_exists.stdout == "no"
 
     - name: hello
       shell: hostname
