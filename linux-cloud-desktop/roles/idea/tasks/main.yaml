@@ -1,0 +1,27 @@
+---
+- name: umake
+  apt: name={{item}} state=installed
+  with_items:
+       - ubuntu-make
+
+- name: idea check
+  shell: test -d /home/rmchale/.local/share/umake/ide/idea-ultimate && echo "yes" || echo "no"
+  register: idea_exists
+
+- name: install idea
+  shell: umake ide idea-ultimate /home/rmchale/.local/share/umake/ide/idea-ultimate
+  when: idea_exists.stdout == "no"
+  become: rmchale
+
+- name: idea check
+  shell: test -d /home/rmchale/.local/share/umake/ide/idea-ultimate && echo "yes" || echo "no"
+  register: idea_exists
+
+- name: pycharm check
+  shell: test -d /home/rmchale/.local/share/umake/ide/pycharm-professional && echo "yes" || echo "no"
+  register: pycharm_exists
+
+- name: install pycharm
+  shell: umake ide idea-ultimate /home/rmchale/.local/share/umake/ide/pycharm-professional
+  when: pycharm_exists.stdout == "no"
+  become: rmchale

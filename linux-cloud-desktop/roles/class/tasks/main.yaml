@@ -1,0 +1,10 @@
+---
+- name: class check
+  shell: test -d /home/rmchale/python-class && echo "yes" || echo "no"
+  register: class_exists
+  become: rmchale
+
+- name: get class
+  shell: git clone git@gitlab.com:ryan-mchale/python-class.git
+  when: class_exists.stdout == "no"
+  become: rmchale

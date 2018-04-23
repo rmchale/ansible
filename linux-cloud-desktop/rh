@@ -3,7 +3,7 @@
 gcloud config set account ryan.mchale@gmail.com
 machine=$(gcloud compute instances list --project=rmchale-1093 |grep mchale-lxde-pd |awk '{ print $6 }')
 if [ -z "$machine" ]; then 
-	gcloud beta compute --project "rmchale-1093" instances create "mchale-lxde-pd" --preemptible --zone "us-central1-f" --machine-type "n1-standard-2"   --scopes "https://www.googleapis.com/auth/cloud-platform" --min-cpu-platform "Automatic" --image "debian-9-stretch-v20180401" --image-project "debian-cloud" --boot-disk-size "100" --boot-disk-type "pd-ssd" --boot-disk-device-name "mchale-lxde-pd"
+	gcloud beta compute --project "rmchale-1093" instances create "mchale-lxde-pd" --preemptible --zone "us-central1-f" --machine-type "n1-standard-2"   --scopes "https://www.googleapis.com/auth/cloud-platform" --min-cpu-platform "Automatic" --image "ubuntu-1710-artful-v20180314" --image-project "ubuntu-os-cloud" --boot-disk-size "100" --boot-disk-type "pd-ssd" --boot-disk-device-name "mchale-lxde-pd"
 	sleep 30
 fi
 ansible-playbook -v -i `gcloud compute instances list --project=rmchale-1093 |grep mchale-lxde-pd |awk '{ print $6 }'`, lxde.yaml
