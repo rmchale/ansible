@@ -8,6 +8,11 @@
     - beakerx
     - docker
 
+  gather_facts: False  
+  pre_tasks:
+  - raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  - setup: # aka gather_facts
+
   tasks:
     - name: check git config
       shell: test -f $HOME/.gitconfig && echo "yes" || echo "no"
