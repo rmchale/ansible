@@ -1,0 +1,21 @@
+---
+- name: keys exist
+  shell: test -f /tmp/ssh.tar.gz && echo "yes" || echo "no"
+  register: keys_exist
+
+- name: keys extracted
+  shell: test -f /home/rmchale/.ssh/id_rsa && echo "yes" || echo "no"
+  register: keys_extracted
+
+- name: install keys
+  copy: src=~/Dropbox/Documents/Keys/ssh.tar.gz dest=/tmp
+  when: 
+    - keys_extracted.stdout == "no"
+    - keys_exist.stdout == "no"
+
+- name: extract keys
+  unarchive: copy=no  src=/tmp/ssh.tar.gz dest=/home/rmchale
+  when: keys_extracted.stdout == "no"
+
+- name: delete keys.tar.gz
+  file: state=absent path=/tmp/ssh.tar.gz

@@ -1,0 +1,15 @@
+---
+- name: check for dotfiles
+  shell: test -d /home/ryanmchale/src/dotfiles && echo "yes" || echo "no"
+  register: dotfiles_exists
+
+- name: create dotfiles
+  file: path=/home/ryanmchale/src/dotfiles state=directory recurse=yes
+  when: dotfiles_exists.stdout == "no"
+
+- name: clone dotfiles
+  shell: git clone git@gitlab.com:ryan-mchale/dotfiles.git /home/ryanmchale/src/dotfiles
+  when: dotfiles_exists.stdout == "no"
+
+- name: gitconfig
+  file: src=/home/ryanmchale/src/dotfiles/gitconfig dest=/home/ryanmchale/.gitconfig state=link

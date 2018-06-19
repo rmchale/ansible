@@ -1,0 +1,19 @@
+- hosts: all
+  become: true
+  become_method: sudo
+  become_user: ryanmchale
+
+  roles:
+    - pycharm
+    - dotfiles
+
+  tasks:
+    
+    - name: hello
+      shell: hostname
+      register: hello
+
+# debug example
+    - debug: msg='host is = "{{ hello.stdout }}"'
+
+
