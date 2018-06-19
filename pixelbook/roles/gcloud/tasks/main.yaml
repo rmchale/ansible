@@ -1,0 +1,33 @@
+---
+- name: apt-get update
+  apt:
+    update_cache: yes
+  become_user: root
+
+- name: linux version
+  shell: echo cloud-sdk-$(lsb_release -c -s)
+  register: cloud_sdk_repo
+
+- name: repo exists
+  shell: test -f /etc/apt/sources.list.d/google-cloud-sdk.list && echo "yes" || echo "no"
+  register: repo_exists
+
+- name: create repo
+  shell: echo "deb http://packages.cloud.google.com/apt {{ cloud_sdk_repo.stdout }} main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+  become_user: root
+  when: repo_exists.stdout == "no"
+
+- name: gcloud key
+  apt_key:
+    url:  https://packages.cloud.google.com/apt/doc/apt-key.gpg 
+    state: present
+  become_user: root
+
+- name: apt-get update2
+  apt:
+    update_cache: yes
+  become_user: root
+
+- name: install gcloud
+  apt: name=google-cloud-sdk state=installed
+  become_user: root

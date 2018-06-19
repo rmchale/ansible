@@ -4,11 +4,6 @@
   become_user: ryanmchale
 
   roles:
-    - downloads
-    - pycharm
-    - dotfiles
-    - sublime
-    - gcloud
     - nvm
 
   tasks:

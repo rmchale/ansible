@@ -1,30 +1,30 @@
 ---
 - name: check for pycharm
-  shell: test -d /home/ryanmchale/applications/pycharm && echo "yes" || echo "no"
+  shell: test -d /home/{{ lookup('env','USER') }}/applications/pycharm && echo "yes" || echo "no"
   register: pycharm_exists
 
 - name: check for download
-  shell: test -f /home/ryanmchale/pycharm.tar.gz && echo "yes" || echo "no"
+  shell: test -f /home/v/pycharm.tar.gz && echo "yes" || echo "no"
   register: pycharm_downloaded
   when: pycharm_exists.stdout == "no"
 
 - name: download pycharm
-  shell: curl -o /home/ryanmchale/pycharm.tar.gz -LO https://download.jetbrains.com/python/pycharm-professional-2018.1.4.tar.gz 
+  shell: curl -o /home/{{ lookup('env','USER') }}/downloads/pycharm.tar.gz -LO https://download.jetbrains.com/python/pycharm-professional-2018.1.4.tar.gz 
   when: 
     - pycharm_exists.stdout == "no" 
     - pycharm_downloaded.stdout == "no"
 
 
 - name: create applications
-  file: path=/home/ryanmchale/applications state=directory recurse=yes
+  file: path=/home/{{ lookup('env','USER') }}/applications state=directory recurse=yes
   when: pycharm_exists.stdout == "no"
 
 - name: untar pycharm
-  shell: tar xzvf /home/ryanmchale/pycharm.tar.gz -C /home/ryanmchale/applications
+  shell: tar xzvf /home/{{ lookup('env','USER') }}/downloads/pycharm.tar.gz -C /home/{{ lookup('env','USER') }}/applications
   when: pycharm_exists.stdout == "no"
 
 - name: link pycharm
-  file: src=/home/ryanmchale/applications/pycharm-2018.1.4 dest=/home/ryanmchale/applications/pycharm state=link
+  file: src=/home/{{ lookup('env','USER') }}/applications/pycharm-2018.1.4 dest=/home/{{ lookup('env','USER') }}/applications/pycharm state=link
   when: pycharm_exists.stdout == "no"
      
 
@@ -37,7 +37,7 @@
                 [Desktop Entry]
                 Name=Pycharm
                 Comment=Pycharm Python IDE
-                Icon=/home/ryanmchale/pycharm-2018.1.4/bin/pycharm.png
-                Exec=/home/ryanmchale/pycharm-2018.1.4/bin/pycharm.sh %u
+                Icon=/home/{{ lookup('env','USER') }}/pycharm-2018.1.4/bin/pycharm.png
+                Exec=/home/{{ lookup('env','USER') }}/pycharm-2018.1.4/bin/pycharm.sh %u
                 Type=Application
                 Categories=IDE

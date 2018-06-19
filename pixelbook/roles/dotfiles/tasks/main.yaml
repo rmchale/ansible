@@ -4,7 +4,7 @@
   register: dotfiles_exists
 
 - name: create dotfiles
-  file: path=/home/ryanmchale/src/dotfiles state=directory recurse=yes
+  file: path=/home/{{ lookup('env','USER') }}/src/dotfiles state=directory recurse=yes
   when: dotfiles_exists.stdout == "no"
 
 - name: clone dotfiles
@@ -12,4 +12,4 @@
   when: dotfiles_exists.stdout == "no"
 
 - name: gitconfig
-  file: src=/home/ryanmchale/src/dotfiles/gitconfig dest=/home/ryanmchale/.gitconfig state=link
+  file: src=/home/{{ lookup('env','USER') }}/src/dotfiles/pixelbook/gitconfig dest=/home/ryanmchale/.gitconfig state=link

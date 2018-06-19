@@ -1,0 +1,15 @@
+---
+- name: nvm exists
+  shell: test -d /home/{{ lookup('env','USER') }}/.nvm && echo "yes" || echo "no"
+  register: nvm_exists
+
+- name: install
+  shell: curl https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | sh
+  when: nvm_exists.stdout == "no"
+
+- name: nvm config
+  blockinfile:
+    dest: /home/{{ lookup('env','USER') }}/.bashrc
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
