@@ -37,7 +37,7 @@
                 [Desktop Entry]
                 Name=Pycharm
                 Comment=Pycharm Python IDE
-                Icon=/home/{{ lookup('env','USER') }}/pycharm-2018.1.4/bin/pycharm.png
-                Exec=/home/{{ lookup('env','USER') }}/pycharm-2018.1.4/bin/pycharm.sh %u
+                Icon=/home/{{ lookup('env','USER') }}/applications/pycharm-2018.1.4/bin/pycharm.png
+                Exec=/home/{{ lookup('env','USER') }}/applications/pycharm-2018.1.4/bin/pycharm.sh %u
                 Type=Application
                 Categories=IDE
